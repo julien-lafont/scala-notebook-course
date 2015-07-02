@@ -1,0 +1,214 @@
+{
+  "metadata":{
+    "name":"2. Try",
+    "user_save_timestamp":"2015-07-01T20:12:32.293Z",
+    "auto_save_timestamp":"2015-07-01T20:54:35.963Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"heading",
+      "source":"Try",
+      "level":1
+    },{
+      "cell_type":"heading",
+      "source":"Implémentation basique",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"/*\n\n   abstract class Try[+T]\n   case class Failure[+T](exception: Throwable) extends Try[T]\n   case class Success[+T](value: T) extends Try[T]\n*/\n",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":1,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Création d'un try",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"import scala.util.{Try, Success, Failure}\n\nval t1 = Try(\"a\")\nval t2 = Try(5)\nval t3 = Try { 10 / 0 }",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":10,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Opérations de base",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"t1.map { res => \n  res + \" world !\"\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":17,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"t2 match {\n  case Success(v) => v * 2\n  case Failure(ex) => {\n\tex.printStackTrace();\n    0\n  }\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"t2.getOrElse(0)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"t3.recover {\n  case ex: java.lang.ArithmeticException => 1\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":15,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Opérations sur plusieurs Try ",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"for {\n  a <- t1\n  b <- t2\n  c <- t3\n} yield {\n  a * b + c\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":18,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val tries = Seq(t1, t2, t3)\n  \nval sumTry = \"?\"",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":21,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// on verra plus tard :)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":23,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"heading",
+      "source":"Try",
+      "level":1
+    },{
+      "cell_type":"heading",
+      "source":"Implémentation basique",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"/*\n   abstract class Try[+T]\n   case class Failure[+T](exception: Throwable) extends Try[T]\n   case class Success[+T](value: T) extends Try[T]\n*/",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":1,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Création d'un try",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"import scala.util.{Try, Success, Failure}\n\nval t1 = Try(\"a\")\nval t2 = Try(5)\nval t3 = Try { 10 / 0 }",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":215,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Opérations de base",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"t1.map { res => \n  res + \" world !\"\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":17,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"t2 match {\n  case Success(v) => v * 2\n  case Failure(ex) => {\n\tex.printStackTrace();\n    0\n  }\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"t2.getOrElse(0)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"t3.recover {\n  case ex: java.lang.ArithmeticException => 1\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":15,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Opérations sur plusieurs Try ",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"Try(0).flatMap { v1 =>\n  Try(10 / v1)\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":181,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"for {\n  a <- t1\n  b <- t2\n  c <- t3\n} yield a * b + c",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":216,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Comment faire si on a une liste de Try que l'on souhaite additionner \nval tries = List(Try(1), Try(2), Try(throw new Exception()) /*...*/)\n  \n// Si on ignore les Failures\ntries.map(_.getOrElse(0)).sum \n  \n// Mais en général, on souhaite l'addition de toutes les valeurs si elles sont toutes en succès, \n// ou renvoyer une Failure si au moins un élément une Failure\n  \n// def sequence[A](def: List[Try[A]]): Try[List[A]]\n  \n// Exemple : sequence(tries).map(values => values.sum)\n",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":224,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Quizz",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

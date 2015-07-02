@@ -1,0 +1,268 @@
+{
+  "metadata":{
+    "name":"4. Future",
+    "user_save_timestamp":"2015-07-01T21:49:00.937Z",
+    "auto_save_timestamp":"2015-07-02T07:17:27.381Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"heading",
+      "source":"Future",
+      "level":1
+    },{
+      "cell_type":"heading",
+      "source":"Implémentation basique",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"trait FFuture[+T] {\n  \n  /** Returns whether the future has already been completed with\n   *  a value or an exception.\n   *\n   *  $nonDeterministic\n   *\n   *  @return    `true` if the future is already completed, `false` otherwise\n   */\n  def isCompleted: Boolean\n    \n  /** The value of this `Future`.\n   *\n   *  If the future is not completed the returned value will be `None`.\n   *  If the future is completed the value will be `Some(Success(t))`\n   *  if it contains a valid result, or `Some(Failure(error))` if it contains\n   *  an exception.\n   */\n  def value: Option[Try[T]]\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":119,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Création d'une Future",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"import scala.concurrent.Future\nimport scala.concurrent.ExecutionContext.Implicits._\n\n// Solution 1 : englober un bloc de code dans une Future. Ce bloc de code sera exécuté en background\n// par un thread différent => ASYNCHRONE\n// > Starts an asynchronous computation and returns a `Future` object with the result of that computation.\n// > The result becomes available once the asynchronous computation is completed.\n\nval f1 = Future {\n  // can be a success\n  \"foobar\"\n}\n\nval f2 = Future {   \n  // or a failure\n  throw new RuntimeException()\n}\n\n// Solution 2 : Retourne immédiatement un résultat qui sera toujours un succès\nval f3 = Future.successful(\"foobar\")\n  \n// Solution 3 : Retourne immédiatement un résultat qui sera un échec (rarement utilisé)\nval f4 = Future.failed(new RuntimeException())\n  \n// La solution 1 est la plus utilisée, en englobant une computation lourde",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":235,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"## A quoi servent les Futures ?\n\nA représenter toutes les actions qui ne produisent pas un résultat immédiat :\n\n - Appel d'un WS (retourne la réponse HTTP ou une Failure si l'appel a échoué)\n - Exécution d'une requête sur une Base de données asynchrone/réactive (MongoDB)\n - Exécution d'un calcul (lourd) dans un thread différent (parallélisation)\n - Communication avec un acteur : les appels sont mis en file d'attente, les réponses ne sont pas immédiates."
+    },{
+      "cell_type":"heading",
+      "source":"Opérations sur une Future",
+      "level":2
+    },{
+      "cell_type":"markdown",
+      "source":"[http://www.scala-lang.org/api/current/index.html#scala.concurrent.Future](http://www.scala-lang.org/api/current/index.html#scala.concurrent.Future)"
+    },{
+      "cell_type":"code",
+      "input":"/*\nclass Future {\n  def map[S](f: T => S): Future[S] \n  def flatMap[S](f: T => Future[S]): Future[S]\n    \n  def onSuccess[U](pf: PartialFunction[T, U]): Unit\n  def onFailure[U](pf: PartialFunction[Throwable, U]): Unit\n  def onComplete[U](f: Try[T] => U): Unit\n\n  def foreach[U](f: T => U)(implicit executor: ExecutionContext): Unit\n\n  def recover[U >: T](pf: PartialFunction[Throwable, U])(implicit executor: ExecutionContext): Future[U]\n  def recoverWith[U >: T](pf: PartialFunction[Throwable, Future[U]])(implicit executor: ExecutionContext): Future[U]\n  def fallbackTo[U >: T](that: Future[U]): Future[U]\n}\n*/",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Opérations sur une liste de Future",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"/*\nobject Future {\n  \n  def sequence[A, M[X] <: TraversableOnce[X]](in: M[Future[A]])\n\t(implicit cbf: CanBuildFrom[M[Future[A]], A, M[A]]): Future[M[A]]\n\n  // WTF !!!!!!!\n\n  def firstCompletedOf[T](futures: TraversableOnce[Future[T]]): Future[T]\n\n  def find[T](futures: TraversableOnce[Future[T]])(p: T => Boolean): Future[Option[T]]\n\n  def fold[T, R](futures: TraversableOnce[Future[T]])(zero: R)(op: (R, T) => R): Future[R]\n}\n*/",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"En j'en fais quoi de ma future au final ? ",
+      "level":2
+    },{
+      "cell_type":"markdown",
+      "source":"Dans 99% des cas, vous la passez à un système qui sait gérer \"proprement\" l'attente du résultat.\n  \nExemple dans play:\n  "
+    },{
+      "cell_type":"code",
+      "input":"/*\n  class UserController {\n    def AddUser = Action.async { \n      userService.save(user).map { userPersisted =>\n        Ok(userPersisted)\n      }\n    }\n  }\n*/",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":236,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"Dans 1% des cas, vous pouvez forcer l'attente de la future (bloque le thread courrant jusqu'à ce que le\nrésultat soit accessible)"
+    },{
+      "cell_type":"code",
+      "input":"import scala.concurrent.duration._\nimport scala.concurrent.Await\n  \nval f = Future { Thread.sleep(5000); \"hey !\" }\nAwait.result(f, 10.seconds)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":237,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Playground",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"object FakeWS {\n \n  case class Repository(id: Int, name: String, author: String)\n  case class Commit(repositoryId: Int, hash: String, message: String, lines: Int)\n    \n  private val repositories = List(\n    Repository(1, \"repo1\", \"Julien\"),\n    Repository(2, \"repo2\", \"Julien\"),\n    Repository(3, \"repo3\", \"Pierre\")\n  )\n    \n  private val commits = List(\n    Commit(1, \"aaaa\", \"aaaaaaaaaaaa\", 20),\n    Commit(1, \"aaab\", \"bbbbbbbbbbbb\", -50),\n    Commit(1, \"aaac\", \"cccccccccccc\", 10),\n    Commit(2, \"baaa\", \"dddddddddddddd\", 200),\n    Commit(2, \"baab\", \"eeeeeeeeeeeeee\", 10),\n    Commit(2, \"baac\", \"ffffffffffffff\", -30),\n    Commit(3, \"caaa\", \"ggggggggggggggg\", 30)\n  )\n  \n  def listAuthors(): Future[List[String]] = \n    Future.successful(repositories.map(_.author).distinct)\n    \n  def getRepoByName(name: String): Future[Repository] = \n    Future(repositories.find(_.name == name).get)\n    \n  def listReposByAuthor(author: String): Future[List[Repository]] =\n    Future.successful(repositories.filter(_.author == author))\n\n  def listCommits(repoId: Int): Future[List[Commit]] =\n    Future.successful(commits.filter(_.repositoryId == repoId))\n  \n}\n\nimport FakeWS._\n  \ndef await[T](f: Future[T]): T = Await.result(f, 10.seconds)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":272,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Liste des commits du dépot \"repo1\"\ndef listCommitsOfRepo1(): Future[List[Commit]] = ???\n  ",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":256,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Liste des commits de \"Julien\"\ndef julienRepos(): Future[List[Commit]] = ???\n  ",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Somme des lignes modifiées pour un dépot\ndef countModifiedLines(repoId: Int): Future[Int] = ???",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":263,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Somme des lignes modifées sur les commits de \"Julien\" \ndef sumModifiedLinesByJulien(): Future[Int] = ???",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":266,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Liste de tous les dépôts\ndef allRepos(): Future[List[Repository]] = ???\n",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":280,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Associer à chaque repo la liste de leurs commits\ndef mapRepoCommits(): Future[Map[Repo, List[Commit]]] = ???",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"heading",
+      "source":"Future",
+      "level":1
+    },{
+      "cell_type":"heading",
+      "source":"Implémentation basique",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"trait FFuture[+T] {\n  \n  /** Returns whether the future has already been completed with\n   *  a value or an exception.\n   *\n   *  $nonDeterministic\n   *\n   *  @return    `true` if the future is already completed, `false` otherwise\n   */\n  def isCompleted: Boolean\n    \n  /** The value of this `Future`.\n   *\n   *  If the future is not completed the returned value will be `None`.\n   *  If the future is completed the value will be `Some(Success(t))`\n   *  if it contains a valid result, or `Some(Failure(error))` if it contains\n   *  an exception.\n   */\n  def value: Option[Try[T]]\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":119,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Création d'une Future",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"import scala.concurrent.Future\nimport scala.concurrent.ExecutionContext.Implicits._\n\n// Solution 1 : englober un bloc de code dans une Future. Ce bloc de code sera exécuté en background\n// par un thread différent => ASYNCHRONE\n// > Starts an asynchronous computation and returns a `Future` object with the result of that computation.\n// > The result becomes available once the asynchronous computation is completed.\n\nval f1 = Future {\n  // can be a success\n  Thread.sleep(20000)\n  \"foobar\"\n}\n\nval f2 = Future {   \n  // or a failure\n  throw new RuntimeException()\n}\n\n// Solution 2 : Retourne immédiatement un résultat qui sera toujours un succès\nval f3 = Future.successful(\"foobar\")\n  \n// Solution 3 : Retourne immédiatement un résultat qui sera un échec (rarement utilisé)\nval f4 = Future.failed(new RuntimeException())\n  \n// La solution 1 est la plus utilisée, en englobant une computation lourde\n// Remarquez que le thread n'a pas été bloqué 10s",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":285,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"## A quoi servent les Futures ?\n\nA représenter toutes les actions qui ne produisent pas un résultat immédiat :\n\n - Appel d'un WS (retourne la réponse HTTP ou une Failure si l'appel a échoué)\n - Exécution d'une requête sur une Base de données asynchrone/réactive (MongoDB)\n - Exécution d'un calcul (lourd) dans un thread différent (parallélisation)\n - Communication avec un acteur : les appels sont mis en file d'attente, les réponses ne sont pas immédiates."
+    },{
+      "cell_type":"heading",
+      "source":"Opérations sur une Future",
+      "level":2
+    },{
+      "cell_type":"markdown",
+      "source":"[http://www.scala-lang.org/api/current/index.html#scala.concurrent.Future](http://www.scala-lang.org/api/current/index.html#scala.concurrent.Future)"
+    },{
+      "cell_type":"code",
+      "input":"/*\n\n  class Future {\n    def map[S](f: T => S): Future[S] \n    def flatMap[S](f: T => Future[S]): Future[S]\n      \n    def onSuccess[U](pf: PartialFunction[T, U]): Unit\n    def onFailure[U](pf: PartialFunction[Throwable, U]): Unit\n    def onComplete[U](f: Try[T] => U): Unit\n  \n    def foreach[U](f: T => U): Unit\n  \n    def recover[U >: T](pf: PartialFunction[Throwable, U]): Future[U]\n    def recoverWith[U >: T](pf: PartialFunction[Throwable, Future[U]]): Future[U]\n    def fallbackTo[U >: T](that: Future[U]): Future[U]\n  }\n\n*/",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Opérations sur une liste de Future",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"/*\nobject Future {\n  \n  def sequence[A, M[X] <: TraversableOnce[X]](in: M[Future[A]])\n\t(implicit cbf: CanBuildFrom[M[Future[A]], A, M[A]]): Future[M[A]] // WTF!!!!\n  // Transforme une List[Future[X]] en Future[List[X]]\n\n  def fold[T, R](futures: TraversableOnce[Future[T]])(zero: R)(op: (R, T) => R): Future[R]\n  // Exemple : val futureSum = Future.fold(futures)(0)(_ + _)\n\n  def firstCompletedOf[T](futures: TraversableOnce[Future[T]]): Future[T]\n\n  def find[T](futures: TraversableOnce[Future[T]])(p: T => Boolean): Future[Option[T]]\n\n}\n*/",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"En j'en fais quoi de ma future au final ? ",
+      "level":2
+    },{
+      "cell_type":"markdown",
+      "source":"Dans 99% des cas, vous la passez à un système qui sait gérer \"proprement\" l'attente du résultat.\n  \nExemple dans play:\n  "
+    },{
+      "cell_type":"code",
+      "input":"/*\n\n  trait UserService {\n    def save(user: User): Future[Id]\n  }\n\n  class UserController {\n    def AddUser = Action.async { \n      userService.save(user).map { userPersisted =>\n        Ok(userPersisted)\n      }\n    }\n  }\n\n*/",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":236,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"Dans 1% des cas, vous pouvez forcer l'attente de la future (bloque le thread courrant jusqu'à ce que le\nrésultat soit accessible)"
+    },{
+      "cell_type":"code",
+      "input":"import scala.concurrent.duration._\nimport scala.concurrent.Await\n  \nval f = Future { Thread.sleep(5000); \"hey !\" }\nAwait.result(f, 10.seconds)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":237,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Playground",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"object FakeWS {\n \n  case class Repository(id: Int, name: String, author: String)\n  case class Commit(repositoryId: Int, hash: String, message: String, lines: Int)\n    \n  private val repositories = List(\n    Repository(1, \"repo1\", \"Julien\"),\n    Repository(2, \"repo2\", \"Julien\"),\n    Repository(3, \"repo3\", \"Pierre\")\n  )\n    \n  private val commits = List(\n    Commit(1, \"aaaa\", \"aaaaaaaaaaaa\", 20),\n    Commit(1, \"aaab\", \"bbbbbbbbbbbb\", -50),\n    Commit(1, \"aaac\", \"cccccccccccc\", 10),\n    Commit(2, \"baaa\", \"dddddddddddddd\", 200),\n    Commit(2, \"baab\", \"eeeeeeeeeeeeee\", 10),\n    Commit(2, \"baac\", \"ffffffffffffff\", -30),\n    Commit(3, \"caaa\", \"ggggggggggggggg\", 30)\n  )\n  \n  def listAuthors(): Future[List[String]] = \n    Future.successful(repositories.map(_.author).distinct)\n    \n  def getRepoByName(name: String): Future[Repository] = \n    Future(repositories.find(_.name == name).get)\n    \n  def listReposByAuthor(author: String): Future[List[Repository]] =\n    Future.successful(repositories.filter(_.author == author))\n\n  def listCommits(repoId: Int): Future[List[Commit]] =\n    Future.successful(commits.filter(_.repositoryId == repoId))\n  \n}\n\nimport FakeWS._\n  \ndef await[T](f: Future[T]): T = Await.result(f, 10.seconds)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":272,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Liste des commits du dépot \"repo1\"\ndef listCommitsOfRepo1(): Future[List[Commit]] = ???\n  ",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":256,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Liste des commits de \"Julien\"\ndef julienRepos(): Future[List[Commit]] = ???\n  ",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Somme des lignes modifiées pour un dépot\ndef countModifiedLines(repoId: Int): Future[Int] = ???",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":263,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Somme des lignes modifées sur les commits de \"Julien\" \ndef sumModifiedLinesByJulien(): Future[Int] = ???",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":266,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Liste de tous les dépôts\ndef allRepos(): Future[List[Repository]] = ???\n",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":280,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Associer à chaque repo la liste de leurs commits\ndef mapRepoCommits(): Future[Map[Repo, List[Commit]]] = ???",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

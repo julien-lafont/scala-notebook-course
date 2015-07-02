@@ -1,0 +1,123 @@
+{
+  "metadata":{
+    "name":"5. Either",
+    "user_save_timestamp":"2015-07-01T21:50:14.680Z",
+    "auto_save_timestamp":"2015-07-02T08:14:30.698Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"5. Either",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"heading",
+      "source":"Either",
+      "level":1
+    },{
+      "cell_type":"heading",
+      "source":"Implémentation basique",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"abstract class EEither[+A, +B] {\n  def isLeft: Boolean\n  def isRight: Boolean \n}\n\nclass Left[+A, +B](a: A) extends Either[A, B] {\n  def isLeft = true\n  def isRight = false\n}\n\ncase class Right[+A, +B](b: B) extends Either[A, B] {\n  def isLeft = false\n  def isRight = true\n}",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Création d'un Either",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"val l: Either[String, Int] = Left(\"xx\")\nval r: Either[Seq[Int], Long] = Right(12)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":" Opérations sur un Either",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"val op = l match {\n  case Left(str) => s\"Hello $str\"\n  case Right(int) => s\"Coucou $int fois\"\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":6,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val op2 = r.fold(\n  left => left.size,\n  right => right\n)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":13,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Souvent on utilise un either pour modéliser une opération qui peut échouer.\n\ncase class BusinessError(code: Int, message: String)\n\ndef sqrt(number: Long): Either[BusinessError, Double] = {\n    if (number < 0) Left(BusinessError(409, \"number must not be negative\"))\n    else Right(Math.sqrt(number))\n}\n\nval res1 = sqrt(10)\nval res2 = sqrt(-10)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":17,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// On peut aussi faire un `map` sur un Either, mais il faut en premier indiquer sur quel side effectuer\n// l'opération\n\nr.right.map(long => long / 1.1)\n\n// Either[Seq[Int], Long] => Either[Int, Double]\n",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":23,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"r.left.map(list => list.head)\n .right.map(l => s\"hello $l\")\n \n\n// Either[Seq[Int], Long] => Either[Int, Long]",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":24,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Problématiques",
+      "level":2
+    },{
+      "cell_type":"heading",
+      "source":"- Difficile de travailler sur plusieurs Either",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"val e1: Either[String, Int] = Right(100)\nval e2: Either[String, String] = Right(\"toto\")\nval e3: Either[String, Double] = Left(\"error 1\")\nval e4: Either[String, Char] = Left(\"error 2\")\n  \nfor {\n  v1 <- e1.right\n  v2 <- e2.right\n} yield s\"$v1 -> $v2\"\n  \n// scala.util.Either[String,String] = Right(\"100 => toto\")",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":38,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val e1: Either[String, Int] = Right(100)\nval e2: Either[String, String] = Right(\"toto\")\nval e3: Either[String, Double] = Left(\"error 1\")\nval e4: Either[String, Char] = Left(\"error 2\")\n  \nfor {\n  v1 <- e1.right\n  v2 <- e2.right\n  v3 <- e3.right\n  v4 <- e4.right\n} yield v4\n  \n// scala.util.Either[String,Char] = Left(error 1)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":40,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"- Impossible d'accumuler les erreurs",
+      "level":2
+    },{
+      "cell_type":"markdown",
+      "source":"Il existe des implémentations basées sur un type Either permettant d'accumuler facilement les erreurs\n\nPlay ou scalaZ ont un type Validation qui peut être Success[T] ou Failure[Seq[Error]]"
+    },{
+      "cell_type":"heading",
+      "source":"Quizz",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

@@ -1,0 +1,275 @@
+{
+  "metadata":{
+    "name":"3. For Compréhension",
+    "user_save_timestamp":"2015-07-01T20:21:03.569Z",
+    "auto_save_timestamp":"2015-07-02T08:21:10.956Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"heading",
+      "source":"For compréhension step by step",
+      "level":1
+    },{
+      "cell_type":"heading",
+      "source":"Création d'une classe DB simulant des requêtes exécutées sur une base de données",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"import scala.util.Try\n\nclass DB {\n  private val persons = new scala.collection.mutable.ArrayBuffer[String]()\n  private val addresses = new scala.collection.mutable.HashMap[Int, String]()\n\n  def listPersons() = persons.toList\n  def insertPerson(name: String): Int = {\n    assert(name.nonEmpty)\n    persons.append(name)\n    persons.size - 1\n  }\n  \n  def listAddresses() = addresses.toMap\n  def insertAddress(index: Int, address: String): Int = {\n    assert(address.nonEmpty)\n    addresses.put(index, address)\n    addresses.size - 1\n  }\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":138,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Définition d'une classe `DBOperation` représentant UNE opération effectuée au sein d'une transaction sur la base de donnée",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"case class DBOperation[A](run: DB => A) {   \n  def commit(db: DB): Try[A] = {\n    Try {\n      //db.startTransaction()\n      run(db)\n      //db.commit()\n    }.recoverWith {\n      case error => \n        // db.rollback()\n        Try(throw error)\n    }\n  }\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":139,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"On peut créer différentes DBOperation et les commiter indépendamment"
+    },{
+      "cell_type":"code",
+      "input":"val db = new DB()\n  \nval query1 = DBOperation(db => db.insertPerson(\"tutu\"))\nval query2 = DBOperation(db => db.listPersons())\n  \nval res1 = query1.commit(db)\nval res2 = query2.commit(db)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":140,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"Par contre impossible de faire des opérations transactionnelles dans ce contexte.\n  \nExemple : on souhaite enregistrer un utilisateur et son adresse.\n\nL'utilisateur saisie nom: \"toto\", adresse: \"\""
+    },{
+      "cell_type":"code",
+      "input":"val db = new DB()\n  \nval name = \"toto\"\nval address = \"\"\n  \nval insertPerson = DBOperation(db => db.insertPerson(name)).commit(db)\nval insertAddress = DBOperation(db => db.insertAddress(idPerson, address)).commit(db)\n  \nval persons = DBOperation(db => db.listPersons()).commit(db)\nval addresses = DBOperation(db => db.listAddresses()).commit(db)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":143,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"Résultat : \n\n - \"Toto\" a été créé avec succès\n - L'adresse n'a pas pu être insérée car elle est vide\n\n=> **Violation de l'intégrité de la base de donnée**"
+    },{
+      "cell_type":"markdown",
+      "source":"La solution ?\n  \nPouvoir aggréger plusieurs requête ensembles et les exécuter d'un coup au sein de la même transaction"
+    },{
+      "cell_type":"heading",
+      "source":"Step 1 : Pouvoir modifier le résultat d'une DBOperation",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"case class DBOperation[A](run: DB => A) {   \n  def commit(db: DB): Try[A] = { Try {run(db)}.recoverWith { case error => Try(throw error) }}\n  def map[B](f: A => B): DBOperation[B] = DBOperation(db => f(run(db)))\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":146,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"def insertToto() = DBOperation(db => db.insertPerson(\"toto\"))\n  \ninsertToto()\n  .map { id => s\"Mon id est $id\" }\n  .commit(new DB())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":147,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val query2 = for {\n  id <- insertToto()\n} yield s\"Mon id est $id\"\n  \nquery2.commit(new DB())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":148,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Step 2 : pouvoir enchaîner 2 requête interdépendantes",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"case class DBOperation[A](run: DB => A) {   \n  def commit(db: DB): Try[A] = { Try {run(db)}.recoverWith { case error => Try(throw error) }}\n \n  def map[B](f: A => B): DBOperation[B] = \n    DBOperation(db => f(run(db)))\n  def flatMap[B](f: A => DBOperation[B]): DBOperation[B] = \n    DBOperation(db => f(run(db)).run(db))\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":151,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"def insertToto() = DBOperation(db => db.insertPerson(\"toto\"))\ndef insertTotoAddress(idToto: Int) = DBOperation(db => db.insertAddress(idToto, \"xxx\"))\ndef listAddresses() = DBOperation(db => db.listAddresses())\n  \ninsertToto().flatMap { idToto => \n  insertTotoAddress(idToto).flatMap { idTotoAddress =>\n    listAddresses()\n  }\n}.commit(new DB())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":152,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val queryComplexe = for {\n  idToto <- insertToto()\n  idTotoAddress <- insertTotoAddress(idToto)\n  list <- listAddresses()\n} yield list\n  \nqueryComplexe.commit(new DB())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":153,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Step 3 : Enjoy!",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"def insertPerson(name: String) = DBOperation(db => db.insertPerson(name))\ndef insertAddress(address: String, idPerson: Int) = DBOperation(db => db.insertAddress(idPerson, address))\ndef listPersons() = DBOperation(db => db.listPersons())\n  \nval query = for {\n    id <- insertPerson(\"tutu\")\n    idA <- insertAddress(\"\", id)\n    list <- listPersons()\n  } yield list\n  \nquery.commit(new DB())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":156,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"Une opération ayant échouée, le résultat de la requête est donc une Failure.\n  \nSi on était sur une vrai BD, la méthode db.rollback aurait rollbacké la transaction, donc \"tutu\" n'a pas été enregistré"
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"heading",
+      "source":"For compréhension step by step",
+      "level":1
+    },{
+      "cell_type":"heading",
+      "source":"Création d'une classe DB simulant des requêtes exécutées sur une base de données",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"import scala.util.Try\n\nclass DB {\n  private val persons = new scala.collection.mutable.ArrayBuffer[String]()\n  private val addresses = new scala.collection.mutable.HashMap[Int, String]()\n\n  def listPersons() = persons.toList\n  def insertPerson(name: String): Int = {\n    assert(name.nonEmpty)\n    persons.append(name)\n    persons.size - 1\n  }\n  \n  def listAddresses() = addresses.toMap\n  def insertAddress(index: Int, address: String): Int = {\n    assert(address.nonEmpty)\n    addresses.put(index, address)\n    addresses.size - 1\n  }\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":305,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Définition d'une classe `DBOperation` représentant UNE opération effectuée au sein d'une transaction sur la base de donnée",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"case class DBOperation[A](run: DB => A) {   \n  def commit(db: DB): Try[A] = {\n    Try {\n      //db.startTransaction()\n      run(db)\n      //db.commit()\n    }.recoverWith {\n      case error => \n        // db.rollback()\n        Try(throw error)\n    }\n  }\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":310,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"On peut créer différentes DBOperation et les commiter indépendamment"
+    },{
+      "cell_type":"code",
+      "input":"val db = new DB()\n  \nval query1 = DBOperation(db => db.insertPerson(\"tutu\"))\nval query2 = DBOperation(db => db.listPersons())\n  \nval res1 = query1.commit(db)\nval res2 = query2.commit(db)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":140,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"Par contre impossible de faire des opérations transactionnelles dans ce contexte.\n  \nExemple : on souhaite enregistrer un utilisateur et son adresse.\n\nL'utilisateur saisie nom: \"toto\", adresse: \"\""
+    },{
+      "cell_type":"code",
+      "input":"val db = new DB()\n  \nval name = \"toto\"\nval address = \"\"\n  \nval insertPerson = DBOperation(db => db.insertPerson(name)).commit(db)\nval insertAddress = DBOperation(db => db.insertAddress(idPerson, address)).commit(db)\n  \nval persons = DBOperation(db => db.listPersons()).commit(db)\nval addresses = DBOperation(db => db.listAddresses()).commit(db)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":143,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"Résultat : \n\n - \"Toto\" a été créé avec succès\n - L'adresse n'a pas pu être insérée car elle est vide\n\n=> **Violation de l'intégrité de la base de donnée**"
+    },{
+      "cell_type":"markdown",
+      "source":"La solution ?\n  \nPouvoir aggréger plusieurs requête ensembles et les exécuter d'un coup au sein de la même transaction"
+    },{
+      "cell_type":"heading",
+      "source":"Step 1 : Pouvoir modifier le résultat d'une DBOperation",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"case class DBOperation[A](run: DB => A) {   \n  def commit(db: DB): Try[A] = { Try {run(db)}.recoverWith { case error => Try(throw error) }}\n  def map[B](f: A => B): DBOperation[B] = DBOperation(db => f(run(db)))\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":312,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"def insertToto() = DBOperation(db => db.insertPerson(\"toto\"))\n  \ninsertToto()\n  .map { id => s\"Mon id est $id\" }\n  .commit(new DB())",
+      "language":"scala",
+      "collapsed":false,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val query2 = for {\n  id <- insertToto()\n} yield s\"Mon id est $id\"\n  \nquery2.commit(new DB())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":309,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Step 2 : pouvoir enchaîner 2 requête interdépendantes",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"case class DBOperation[A](run: DB => A) {   \n  def commit(db: DB): Try[A] = { Try {run(db)}.recoverWith { case error => Try(throw error) }}\n \n  def map[B](f: A => B): DBOperation[B] = \n    DBOperation(db => f(run(db)))\n  def flatMap[B](f: A => DBOperation[B]): DBOperation[B] = \n    DBOperation(db => f(run(db)).run(db))\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":151,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"def insertToto() = DBOperation(db => db.insertPerson(\"toto\"))\ndef insertTotoAddress(idToto: Int) = DBOperation(db => db.insertAddress(idToto, \"xxx\"))\ndef listAddresses() = DBOperation(db => db.listAddresses())\n  \ninsertToto().flatMap { idToto => \n  insertTotoAddress(idToto).flatMap { idTotoAddress =>\n    listAddresses()\n  }\n}.commit(new DB())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":152,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val queryComplexe = for {\n  idToto <- insertToto()\n  idTotoAddress <- insertTotoAddress(idToto)\n  list <- listAddresses()\n} yield list\n  \nqueryComplexe.commit(new DB())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":153,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Step 3 : Enjoy!",
+      "level":3
+    },{
+      "cell_type":"code",
+      "input":"def insertPerson(name: String) = DBOperation(db => db.insertPerson(name))\ndef insertAddress(address: String, idPerson: Int) = DBOperation(db => db.insertAddress(idPerson, address))\ndef listPersons() = DBOperation(db => db.listPersons())\n  \nval query = for {\n    id <- insertPerson(\"tutu\")\n    idA <- insertAddress(\"\", id)\n    list <- listPersons()\n  } yield list\n  \nquery.commit(new DB())",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":156,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"Une opération ayant échouée, le résultat de la requête est donc une Failure.\n  \nSi on était sur une vrai BD, la méthode db.rollback aurait rollbacké la transaction, donc \"tutu\" n'a pas été enregistré"
+    },{
+      "cell_type":"heading",
+      "source":"En résumé",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"for (x <- xs) yield x + 1\n=>\nxs.map(x => x + 1)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":48,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"for {\n  x <- xs\n  y <- ys\n} yield (x, y)\n  \n=>\n  \nxs.flatMap { x => \n  ys.map { y =>\n    (x, y)   \n }\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":49,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"for {\n  x <- xs \n  if x % 2 == 0\n} yield x + 1\n\n  =>\n\nxs\n  .filter(x => x % 2 == 0)\n  .map { x =>\n    x + 1    \n  }",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}
