@@ -23,8 +23,8 @@ var IPython = (function (IPython) {
         this.showInput = true;
         this.tooltip_timeout = null;
         this.clear_out_timeout = null;
+        this.hideInputOnResult = false;
         this.tooltip = null;
-        this.hideInputOnResult = true;
         this.notebook = notebook;
         IPython.Cell.apply(this, arguments);
     };
