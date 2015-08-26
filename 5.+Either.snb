@@ -1,19 +1,10 @@
 {
   "metadata":{
     "name":"5. Either",
-    "user_save_timestamp":"2015-07-01T21:50:14.680Z",
-    "auto_save_timestamp":"2015-08-26T07:57:21.586Z"
+    "user_save_timestamp":"2015-08-26T09:47:54.430Z",
+    "auto_save_timestamp":"2015-08-26T09:22:32.304Z"
   },
   "worksheets":[{
-    "cells":[{
-      "cell_type":"code",
-      "input":"5. Either",
-      "language":"scala",
-      "collapsed":true,
-      "outputs":[]
-    }]
-  }],
-  "autosaved":[{
     "cells":[{
       "cell_type":"heading",
       "source":"Either",
@@ -26,7 +17,7 @@
       "cell_type":"code",
       "input":"abstract class EEither[+A, +B] {\n  def isLeft: Boolean\n  def isRight: Boolean \n}\n\nclass Left[+A, +B](a: A) extends Either[A, B] {\n  def isLeft = true\n  def isRight = false\n}\n\ncase class Right[+A, +B](b: B) extends Either[A, B] {\n  def isLeft = false\n  def isRight = true\n}",
       "language":"scala",
-      "collapsed":true,
+      "collapsed":false,
       "outputs":[]
     },{
       "cell_type":"heading",
@@ -113,12 +104,34 @@
       "level":2
     },{
       "cell_type":"raw",
-      "source":"Dans de nombreux cas il est plus simple qu'un `map` fonctionne sur sur "
+      "source":"Dans de nombreux cas il est plus simple qu'un `map` fonctionne sur sur la partie succès de l'either (droite).\nOn parle de type \"right biased\".\n\nScalaZ validation `\\/` est right-biased.\n`Try` est d'une certaine manière right-biased."
     },{
       "cell_type":"heading",
       "source":"Quizz",
       "level":2
+    },{
+      "cell_type":"code",
+      "input":"case class Errors(messages: Seq[String])\nobject Errors {\n  // Shortcut to create an Errors with just one message\n  def apply(first: String): Errors = Errors(Seq(first))\n}\n\nval sampleValidation = Right(\"ok\")\nval sampleValidation2 = Left(Errors(\"oneError\"))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":7,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"/**\n* Compose the results of the two validations.\n* If the 2 validations are a success, return a tuple with their values\n* If at least one of the validation failed, return the accumulations of the errors\n*/\ndef compose[B, C](first: Either[Errors, B], second: Either[Errors, C]): Either[Errors, (B, C)] = {\n  (first, second) match {\n    case (Right(v1), Right(v2)) => Right((v1, v2))\n    case (Left(e1), Left(e2)) => Left(Errors(e1.messages ++ e2.messages))\n    case (Left(e1), _) => Left(e1)\n    case (_, Left(e2)) => Left(e2)\n  }\n}\n\nassert(compose(Left(Errors(\"a\")), Left(Errors(\"b\"))) == Left(Errors(Seq(\"a\", \"b\"))))\nassert(compose(Left(Errors(\"a\")), Right(1)) == Left(Errors(Seq(\"a\"))))\nassert(compose(Right(1), Right(2)) == Right((1, 2)))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":8,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"/**\n* Sequence a list of validations\n* Accumulate errors if at least one validation failed\n* Accumulate success value if all the validations succeed\n*/\ndef sequence[B](validations: Seq[Either[Errors, B]]): Either[Errors, Seq[B]] = {\n  val neutral: Either[Errors, Seq[B]] = Right(Seq.empty)\n  validations.foldLeft(neutral) {\n    case (Right(v1), Right(v2)) => Right(v1 ++ Seq(v2))\n    case (maybeErr1, maybeErr2) => Left(compose(maybeErr1, maybeErr2).left.get)\n  }\n}\n\nassert(sequence(Seq(Left(Errors(\"a\")), Left(Errors(\"b\")))) == Left(Errors(Seq(\"a\", \"b\"))))\nassert(sequence(Seq(Left(Errors(\"a\")), Right(2))) == Left(Errors(Seq(\"a\"))))\nassert(sequence(Seq(Right(1), Right(2), Right(3))) == Right(Seq(1, 2, 3)))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":9,
+      "outputs":[]
     }]
   }],
+  "autosaved":[],
   "nbformat":3
 }

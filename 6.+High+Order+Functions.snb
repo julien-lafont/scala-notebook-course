@@ -1,0 +1,68 @@
+{
+  "metadata":{
+    "name":"6. High Order Functions",
+    "user_save_timestamp":"2015-08-26T10:03:44.134Z",
+    "auto_save_timestamp":"2015-08-26T10:03:37.019Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"heading",
+      "source":"High Order Functions",
+      "level":1
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":65,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"case class Request(path: String)\ncase class Response(code: Int, content: String)\n\nclass ActionResult(block: Request => Response) {\n  def apply(request: Request): Response = block(request)\n}\n\ntrait Controller {\n  def Action(block: Request => Response): ActionResult = new ActionResult(block)\n}\n\n// ----------\n\nclass OrderController extends Controller {\n  \n  val list = Action { _ => // we don't care about request\n    Response(200, \"all orders\")\n  }\n  \n  val getById = Action { request =>\n    val orderIdRegex = \"/orders/([0-9]+)\".r\n    request.path match {\n       case orderIdRegex(id) => \n          val order = getOrder(id)\n          Response(200, order.name)\n       case _ => Response(404, \"\")\n    }\n  }\n  \n  // Fake implem\n  case class Order(id: String, name: String)\n  protected def getOrder(id: String): Order = {\n    Order(id, s\"my awesome order $id\") \n  }\n}\n\nval orderController = new OrderController()\n\nprintln(orderController.list(Request(\"/\")))\nprintln(orderController.list(Request(\"/\")))\n\nprintln(orderController.getById(Request(\"/orders/1\")))\nprintln(orderController.getById(Request(\"/o/1\")))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":70,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"class OrderController2 extends OrderController {\n \n  private val orderIdRegex = \"/orders/([0-9]+)\".r\n    \n  private def withOrder(request: Request)(block: Order => Response): Response = {\n    request.path match {\n      case orderIdRegex(id) => \n        val order = getOrder(id)\n        block(order)\n      case _ => Response(404, \"Order not found\")\n    }\n  }\n  \n  override val getById = Action { request =>\n    withOrder(request) { order =>\n      Response(200, order.name)\n    }\n  }\n}\n               \nval orderController = new OrderController2()\n\nprintln(orderController.getById(Request(\"/orders/1\")))         \nprintln(orderController.getById(Request(\"/o/1\")))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":71,
+      "outputs":[]
+    },{
+      "cell_type":"heading",
+      "source":"Partially applied function",
+      "level":2
+    },{
+      "cell_type":"code",
+      "input":"def publish(channel: String)(message: String) = {\n // kafka.publish(new Topic(channel), message)\n println(s\"[$channel] $message\")\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":20,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"publish(\"bidrequests\")(\"1200\")\npublish(\"bidrequests\")(\"1300\")\npublish(\"win\")(\"300\")",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":21,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"class BidRequestsPublisher {\n  \n  // Partial function\n  val emit = publish(\"bidrequests\") _\n    \n}\n\nval publisher = new BidRequestsPublisher()\npublisher.emit(\"1200\")",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":31,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[],
+  "nbformat":3
+}
