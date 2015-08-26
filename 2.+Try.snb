@@ -2,7 +2,7 @@
   "metadata":{
     "name":"2. Try",
     "user_save_timestamp":"2015-07-01T20:12:32.293Z",
-    "auto_save_timestamp":"2015-07-01T20:54:35.963Z"
+    "auto_save_timestamp":"2015-08-26T07:28:47.536Z"
   },
   "worksheets":[{
     "cells":[{
@@ -179,12 +179,6 @@
       "language":"scala",
       "collapsed":false,
       "prompt_number":224,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"",
-      "language":"scala",
-      "collapsed":true,
       "outputs":[]
     },{
       "cell_type":"heading",
