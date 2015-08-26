@@ -2,7 +2,7 @@
   "metadata":{
     "name":"5. Either",
     "user_save_timestamp":"2015-07-01T21:50:14.680Z",
-    "auto_save_timestamp":"2015-07-02T08:14:30.698Z"
+    "auto_save_timestamp":"2015-08-26T07:57:21.586Z"
   },
   "worksheets":[{
     "cells":[{
@@ -66,14 +66,14 @@
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// On peut aussi faire un `map` sur un Either, mais il faut en premier indiquer sur quel side effectuer\n// l'opération\n\nr.right.map(long => long / 1.1)\n\n// Either[Seq[Int], Long] => Either[Int, Double]\n",
+      "input":"// On peut aussi faire un `map` sur un Either, mais il faut en premier indiquer sur quel side effectuer\n// l'opération.\n\nr.right.map(long => long / 1.1)\n\n// Either[Seq[Int], Long] => Either[Int, Double]\n",
       "language":"scala",
       "collapsed":false,
       "prompt_number":23,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"r.left.map(list => list.head)\n .right.map(l => s\"hello $l\")\n \n\n// Either[Seq[Int], Long] => Either[Int, Long]",
+      "input":"// On dit que either n'est pas biaisé, ni à gauche, ni à droite\n\nr.left.map(list => list.head)\n .right.map(l => s\"hello $l\")\n \n// Either[Seq[Int], Long] => Either[Int, Long]",
       "language":"scala",
       "collapsed":false,
       "prompt_number":24,
@@ -109,14 +109,15 @@
       "source":"Il existe des implémentations basées sur un type Either permettant d'accumuler facilement les erreurs\n\nPlay ou scalaZ ont un type Validation qui peut être Success[T] ou Failure[Seq[Error]]"
     },{
       "cell_type":"heading",
-      "source":"Quizz",
+      "source":"- Pas de biais par défaut",
       "level":2
     },{
-      "cell_type":"code",
-      "input":"",
-      "language":"scala",
-      "collapsed":true,
-      "outputs":[]
+      "cell_type":"raw",
+      "source":"Dans de nombreux cas il est plus simple qu'un `map` fonctionne sur sur "
+    },{
+      "cell_type":"heading",
+      "source":"Quizz",
+      "level":2
     }]
   }],
   "nbformat":3
