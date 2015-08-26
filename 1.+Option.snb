@@ -1,134 +1,10 @@
 {
   "metadata":{
     "name":"1. Option",
-    "user_save_timestamp":"2015-07-01T20:12:19.261Z",
-    "auto_save_timestamp":"2015-08-26T07:27:47.744Z"
+    "user_save_timestamp":"2015-08-26T07:53:23.839Z",
+    "auto_save_timestamp":"2015-08-26T07:53:20.367Z"
   },
   "worksheets":[{
-    "cells":[{
-      "cell_type":"markdown",
-      "source":"# Option"
-    },{
-      "cell_type":"heading",
-      "source":"Implémentation basique",
-      "level":2
-    },{
-      "cell_type":"code",
-      "input":"/*\n  trait Option[+T]\n  case class Some[+T](value: T) extends Option[T]\n  case object None extends Option[Nothing]\n*/",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":157,
-      "outputs":[]
-    },{
-      "cell_type":"heading",
-      "source":"Opérations",
-      "level":2
-    },{
-      "cell_type":"code",
-      "input":"private def somethingThatMayBeNull() = null\n\n// Initialisation\nval x: Option[String] = Some(\"foo\")\nval y: Option[String] = None\nval z = Option[String](somethingThatMayBeNull())",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":158,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// Calculer une expression en fonction de la présence ou non d'une valeur\nx match {\n  case Some(extracted) => extracted + \"bar\"\n  case None => \"nothing\"\n}",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":159,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// Autre méthode (valeur par défaut)\n// getOrElse[B >: A](default: ⇒ B): B\nx.map(_ + \"bar\").getOrElse(\"nothing\")",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":160,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"val `empty?` = x.isEmpty\nval `nonEmpty?` = x.nonEmpty",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":161,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// Comment travailler sur plusieurs options à la suite ?\n\nval some1 = Some(1)\nval some2 = Some(2)\nval some3 = Some(3)\nval none: Option[Int] = None",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":162,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// Avec `map` non ?\n\nsome1.map(v1 => \n  some2.map(v2 =>\n    v1 + v2\n  )\n)\n\n// presque...",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":164,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// FlatMap à la rescousse !\n\nsome1.flatMap(v1 => \n  some2.flatMap(v2 =>\n    some3.map(v3 =>\n      v1 + v2 + v3\n    )\n  )\n)\n  \n// Mieux !",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":165,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// C'est quoi la différence ?\n\n/*\n\n  abstract class Option[+A] extends Product with Serializable {\n    def isEmpty: Boolean\n    def get: A\n\n    def flatMap[B](f: A => Option[B]): Option[B] = {\n      if (this.isEmpty) None else f(this.get)\n    }\n\n    def map[B](f: A => B): Option[B] = {\n      flatMap(a => Option(f(a)))\n    }\n\n  }\n\n*/\n",
-      "language":"scala",
-      "collapsed":true,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// Et si une valeur n'est pas définie ?\n\nsome1.flatMap(v1 =>\n  none.map(v2 =>\n    v1 + v2\n  )\n)",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":166,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// Mais il y a plus simple !\nfor {\n  v1: Int <- some1: Option[Int]\n  v2 <- some2\n  v3 <- some3\n  if v3 >= 1\n} yield v1 + v2 + v3\n  \n// La magie sera expliquée plus tard",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":167,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// + toutes les propriétés d'un Iterable grâce (à cause) du\nimplicit def option2Iterable[A](xo: Option[A]): Iterable[A] = xo.toList\n  \nSome(1).toList.head\nSome(1).head",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":170,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"/*\n   Disgression: `x: String` VS `x: => String`\n*/",
-      "language":"scala",
-      "collapsed":false,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"def test1(display: Boolean, x: String) = if (display) println(x)\ndef test2(display: Boolean, x: => String) = if (display) println(x)\n\ndef expensiveGetName() = {\n  println(\"fetch name with a WS call...\")\n  \"julien\"\n}",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":171,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"test1(false, expensiveGetName())",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":172,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"test2(false, expensiveGetName())",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":173,
-      "outputs":[]
-    }]
-  }],
-  "autosaved":[{
     "cells":[{
       "cell_type":"markdown",
       "source":"# Option"
@@ -289,39 +165,20 @@
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Salaire net de pierre ( = brut * 0.8 )\nval salaireNetPierre: Option[Double] = ???\n\n\n  \nassert(salaireNetPierre == Some(800d))",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":300,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// Liste des salaires nets > 500€ (sans utiliser filter, ni map, ni flatMap....)\nval listSalairesNetGT500: List[Double] = ???\n  \n// Somme de ces salaires\nval sumSalairesNetGT500: Double = ???\n  \nassert(sumSalairesNetGT500 == 4800d)",
-      "language":"scala",
-      "collapsed":false,
-      "prompt_number":212,
-      "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"// Salaire net de pierre ( = brut * 0.8 )\nval salaireNetPierre: Option[Double] = for {\n  employe <- tabmo.getEmployeByNom(\"pierre\")\n  salaire <- tabmo.getSalaireById(employe.id)\n} yield salaire.brut * 0.8\n    \nassert(salaireNetPierre == Some(800d))",
+      "input":"// Salaire net de pierre ( = brut * 0.8 )\nval salaireNetPierre: Option[Double] = ???\n    \nassert(salaireNetPierre == Some(800d))",
       "language":"scala",
       "collapsed":false,
       "prompt_number":18,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Liste des salaires nets > 500€ (sans utiliser filter, ni map, ni flatMap....)\nval listSalairesNetGT500: List[Double] = for {\n  salaire <- tabmo.listSalaires()\n  salaireNet = salaire.brut * 0.8\n  if salaireNet > 500\n} yield salaireNet\n  \nval sumSalairesNetGT500 = listSalairesNetGT500.sum\n  \nassert(sumSalairesNetGT500 == 4800d)",
+      "input":"// Liste des salaires nets > 500€ (sans utiliser filter, ni map, ni flatMap....)\nval listSalairesNetGT500: List[Double] = ???\n  \nval sumSalairesNetGT500 = ???\n  \nassert(sumSalairesNetGT500 == 4800d)",
       "language":"scala",
       "collapsed":false,
       "prompt_number":26,
       "outputs":[]
-    },{
-      "cell_type":"code",
-      "input":"",
-      "language":"scala",
-      "collapsed":true,
-      "outputs":[]
     }]
   }],
+  "autosaved":[],
   "nbformat":3
 }

@@ -1,8 +1,8 @@
 {
   "metadata":{
     "name":"4. Future",
-    "user_save_timestamp":"2015-08-26T07:37:32.216Z",
-    "auto_save_timestamp":"2015-08-26T07:37:09.834Z"
+    "user_save_timestamp":"2015-08-26T07:54:02.599Z",
+    "auto_save_timestamp":"2015-08-26T07:53:47.309Z"
   },
   "worksheets":[{
     "cells":[{
@@ -94,41 +94,41 @@
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Liste des commits du dépot \"repo1\"\ndef listCommitsOfRepo1(): Future[List[Commit]] = for {\n  repo <- getRepoByName(name)\n  commits <- listCommits(repo.id)\n} yield commits\n \nawait(listCommitsOfRepo(\"repo1\"))\n  ",
+      "input":"// Liste des commits du dépot \"repo1\"\ndef listCommitsOfRepo1(): Future[List[Commit]] = ???\n \nawait(listCommitsOfRepo(\"repo1\"))\n  ",
       "language":"scala",
       "collapsed":false,
       "prompt_number":256,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Liste de tous les dépôts\ndef allRepos(): Future[List[Repository]] = {\n  for {\n    authors <- listAuthors()\n    repos <- Future.sequence(authors.map(listReposByAuthor))\n  } yield repos.flatten\n}\n\nawait(allRepos())",
+      "input":"// Liste de tous les dépôts\ndef allRepos(): Future[List[Repository]] = ???\n\nawait(allRepos())",
       "language":"scala",
       "collapsed":false,
       "prompt_number":280,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Liste des commits de \"Julien\"\ndef listCommitsJulien(): Future[List[Commit]] = for {\n  repos     <- listReposByAuthor(\"Julien\")\n  repoIds   = repos.map(_.id) // On peut assigner des variables normales au milieu d'une for-compréhension avec \"variable = expression\"\n  commits   <- Future.sequence(repoIds.map(listCommits))\n} yield commits.flatten\n  \nawait(listCommitsJulien)\n  ",
+      "input":"// Liste des commits de \"Julien\"\ndef listCommitsJulien(): Future[List[Commit]] = ???\n  \nawait(listCommitsJulien)\n  ",
       "language":"scala",
       "collapsed":true,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Somme des lignes modifiées pour un dépot\n\n// with flatmap/map/sum\ndef sumModifiedLinesForRepo(name: String) = {\n  getRepoByName(name).flatMap { repo =>\n    listCommits(repo.id).map { commits =>\n      commits.map(_.lines).sum\n    }\n  }\n}\n\n//or for-comprehension/sum\ndef sumModifiedLinesForRepo2(name: String) = {\n  for {\n    repo <- getRepoByName(name)\n    commits <- listCommits(repo.id)\n  } yield commits.map(_.lines).sum\n   \n}\n\nawait(listCommitsJulien)",
+      "input":"// Somme des lignes modifiées pour un dépot\n\n// with flatmap/map/sum\ndef sumModifiedLinesForRepo(name: String) = ???\n\n//or for-comprehension/sum\ndef sumModifiedLinesForRepo2(name: String) = ???\n\nawait(listCommitsJulien)",
       "language":"scala",
       "collapsed":false,
       "prompt_number":263,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Somme des lignes modifées sur les commits de \"Julien\" \n\n// with Future.fold\ndef sumModifiedLinesByJulien(): Future[Int] = {\n  for {\n    repos <- listReposByAuthor(\"Julien\")\n    countLinesByRepo = repos.map(_.name).map(sumModifiedLinesForRepo)\n    total <- Future.fold(countLinesByRepo)(0)(_+_)\n  } yield total\n}\n\nval res1 = await(sumModifiedLinesByJulien())\n\n// with Future.sequence and sum\ndef sumModifiedLinesByJulienV2(): Future[Int] = {\n  listReposByAuthor(\"Julien\").flatMap { repos =>\n    val countFutureLinesByRepo = repos.map(_.name).map(sumModifiedLinesForRepo)\n    val futureCountLinesByRepo = Future.sequence(countFutureLinesByRepo)\n    futureCountLinesByRepo.map(_.sum)\n  }\n}\n  \nval res2 = await(sumModifiedLinesByJulienV2())",
+      "input":"// Somme des lignes modifées sur les commits de \"Julien\" \n\n// with Future.fold\ndef sumModifiedLinesByJulien(): Future[Int] = ???\n\nval res1 = await(sumModifiedLinesByJulien())\n\n// with Future.sequence and sum\ndef sumModifiedLinesByJulienV2(): Future[Int] = ???\n  \nval res2 = await(sumModifiedLinesByJulienV2())",
       "language":"scala",
       "collapsed":false,
       "prompt_number":266,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"// Associer à chaque repo la liste de leurs commits\ndef mapRepoCommits(): Future[Map[Repository, List[Commit]]] = {\n  allRepos().flatMap { repos =>\n    val tuplesReposCommits: Future[List[(Repository, List[Commit])]] = Future.sequence(repos.map { repo =>\n      \n      val tupleRepoCommits: Future[(Repository, List[Commit])] = listCommitsOfRepo(repo.name)\n          .map { commits => (repo, commits) }\n                                                                                                  \n      tupleRepoCommits                                           \n                                                       \n    })\n    \n    val mapReposCommits: Future[Map[Repository, List[Commit]]] = tuplesReposCommits.map(_.toMap)\n      \n    mapReposCommits\n  }\n}\n\nawait(mapRepoCommits())",
+      "input":"// Associer à chaque repo la liste de leurs commits\ndef mapRepoCommits(): Future[Map[Repository, List[Commit]]] = ???\n\nawait(mapRepoCommits())",
       "language":"scala",
       "collapsed":true,
       "outputs":[]

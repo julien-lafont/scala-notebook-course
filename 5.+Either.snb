@@ -1,7 +1,7 @@
 {
   "metadata":{
     "name":"5. Either",
-    "user_save_timestamp":"2015-08-26T09:47:54.430Z",
+    "user_save_timestamp":"2015-08-26T10:09:48.912Z",
     "auto_save_timestamp":"2015-08-26T09:22:32.304Z"
   },
   "worksheets":[{
@@ -118,14 +118,14 @@
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"/**\n* Compose the results of the two validations.\n* If the 2 validations are a success, return a tuple with their values\n* If at least one of the validation failed, return the accumulations of the errors\n*/\ndef compose[B, C](first: Either[Errors, B], second: Either[Errors, C]): Either[Errors, (B, C)] = {\n  (first, second) match {\n    case (Right(v1), Right(v2)) => Right((v1, v2))\n    case (Left(e1), Left(e2)) => Left(Errors(e1.messages ++ e2.messages))\n    case (Left(e1), _) => Left(e1)\n    case (_, Left(e2)) => Left(e2)\n  }\n}\n\nassert(compose(Left(Errors(\"a\")), Left(Errors(\"b\"))) == Left(Errors(Seq(\"a\", \"b\"))))\nassert(compose(Left(Errors(\"a\")), Right(1)) == Left(Errors(Seq(\"a\"))))\nassert(compose(Right(1), Right(2)) == Right((1, 2)))",
+      "input":"/**\n* Compose the results of the two validations.\n* If the 2 validations are a success, return a tuple with their values\n* If at least one of the validation failed, return the accumulations of the errors\n*/\ndef compose[B, C](first: Either[Errors, B], second: Either[Errors, C]): Either[Errors, (B, C)] = ???\n\nassert(compose(Left(Errors(\"a\")), Left(Errors(\"b\"))) == Left(Errors(Seq(\"a\", \"b\"))))\nassert(compose(Left(Errors(\"a\")), Right(1)) == Left(Errors(Seq(\"a\"))))\nassert(compose(Right(1), Right(2)) == Right((1, 2)))",
       "language":"scala",
       "collapsed":false,
       "prompt_number":8,
       "outputs":[]
     },{
       "cell_type":"code",
-      "input":"/**\n* Sequence a list of validations\n* Accumulate errors if at least one validation failed\n* Accumulate success value if all the validations succeed\n*/\ndef sequence[B](validations: Seq[Either[Errors, B]]): Either[Errors, Seq[B]] = {\n  val neutral: Either[Errors, Seq[B]] = Right(Seq.empty)\n  validations.foldLeft(neutral) {\n    case (Right(v1), Right(v2)) => Right(v1 ++ Seq(v2))\n    case (maybeErr1, maybeErr2) => Left(compose(maybeErr1, maybeErr2).left.get)\n  }\n}\n\nassert(sequence(Seq(Left(Errors(\"a\")), Left(Errors(\"b\")))) == Left(Errors(Seq(\"a\", \"b\"))))\nassert(sequence(Seq(Left(Errors(\"a\")), Right(2))) == Left(Errors(Seq(\"a\"))))\nassert(sequence(Seq(Right(1), Right(2), Right(3))) == Right(Seq(1, 2, 3)))",
+      "input":"/**\n* Sequence a list of validations\n* Accumulate errors if at least one validation failed\n* Accumulate success value if all the validations succeed\n*/\ndef sequence[B](validations: Seq[Either[Errors, B]]): Either[Errors, Seq[B]] = ???\n\nassert(sequence(Seq(Left(Errors(\"a\")), Left(Errors(\"b\")))) == Left(Errors(Seq(\"a\", \"b\"))))\nassert(sequence(Seq(Left(Errors(\"a\")), Right(2))) == Left(Errors(Seq(\"a\"))))\nassert(sequence(Seq(Right(1), Right(2), Right(3))) == Right(Seq(1, 2, 3)))",
       "language":"scala",
       "collapsed":false,
       "prompt_number":9,
