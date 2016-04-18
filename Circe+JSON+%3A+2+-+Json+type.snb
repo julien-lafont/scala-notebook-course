@@ -1,0 +1,90 @@
+{
+  "metadata":{
+    "name":"Circe JSON : 2 - Json type",
+    "user_save_timestamp":"2016-04-17T19:47:02.949Z",
+    "auto_save_timestamp":"2016-04-17T20:30:04.006Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"Circe",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"markdown",
+      "source":"# Json Type"
+    },{
+      "cell_type":"markdown",
+      "source":"A data type representing possible JSON values.\n  \n```\nsealed abstract class Json\nfinal case object JNull extends Json\nfinal case class JBoolean(b: Boolean) extends Json\nfinal case class JNumber(n: JsonNumber) extends Json\nfinal case class JString(s: String) extends Json\nfinal case class JArray(a: Seq[Json]) extends Json\nfinal case class JObject(o: JsonObject) extends Json // Json object ~= Map[String, Json]\n```"
+    },{
+      "cell_type":"markdown",
+      "source":"## Créer un objet JSON"
+    },{
+      "cell_type":"code",
+      "input":"import io.circe._\n  \n// En premier, les \"types primitifs\"\n\nval jsonBoolean = Json.fromBoolean(true)\nval jsonString = Json.fromString(\"coucou\")\nval jsonNumber1 = Json.fromLong(Long.MaxValue)\nval jsonNumber2 = Json.fromDouble(1.1111111111111111111111111) // Watch the approximation\nval invalidJsonNumber2 = Json.fromDouble(Double.PositiveInfinity) // Invalid JSON value\nval JsonNumber3 = Json.fromBigDecimal(BigDecimal(\"1.1111111111111111111111\"))",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":43,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Puis les types composés:  array et object\n\n\n// def obj(fields: (String, Json)*)\nval obj1 = Json.obj(\"key\" -> Json.fromString(\"value\"))\nval obj2 = Json.obj(\n  \"firstname\" -> Json.fromString(\"julien\"),\n  \"lastname\" -> Json.fromString(\"lafont\"),\n  \"isBickend\" -> Json.fromBoolean(true)\n)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":46,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// def arr(values: Json*): Json\n\nval arr1 = Json.arr(jsonBoolean, jsonString, jsonNumber1)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":29,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"## Transformer un JSON en String\n\nCirce fournit des helpers très facile à utiliser pour ça"
+    },{
+      "cell_type":"code",
+      "input":"obj2.noSpaces",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":32,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"obj2.spaces2",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":33,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// Tips\n\nval obj = Json.obj(\"key\" -> Json.Null)\nval avecNull = obj.noSpaces\n\nval printerWithoutNull = Printer.noSpaces.copy(dropNullKeys=true)\nval sansNull = printerWithoutNull.pretty(obj)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":44,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"## Décoder un JSON de manière brutale :D"
+    },{
+      "cell_type":"code",
+      "input":"val maybeObject: Option[JsonObject] = obj2.asObject\n  \nmaybeObject.map { o =>\n  o.fields // Liste des clés\n  o.values // Liste des valeurs\n  o.toMap // Map clé/valeur     (def toMap: Map[String, Json])\n}\n\n// Idem avec .asArray, .asBoolean, .asString....\n\n// Il est aussi possible de chainer les appels pour extraire une donnée précise\n\n/**\n  for {\n    jsonObject <- obj2.asObject\n    firstnameJson <- jsonObject(\"firstname\")\n    firstname <- firstnameJson.asString \n  } yield firstname\n*/",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":63,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

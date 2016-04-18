@@ -1,0 +1,93 @@
+{
+  "metadata":{
+    "name":"Circe JSON : 1 - Parsing",
+    "user_save_timestamp":"2016-04-17T19:24:11.582Z",
+    "auto_save_timestamp":"2016-04-17T19:45:09.910Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"// Main import (always required)\nimport io.circe._\n\n  val validJSON = \"\"\"\n    {\n      \"name\": \"Deathstroke\",\n      \"alias\": [\"Slade Wilson\"],\n      \"active\": true,\n      \"firstApparition\": 1980,\n      \"cover\": \"https://upload.wikimedia.org/wikipedia/en/thumb/6/67/Deathstroke_Vol_2_8.png/250px-Deathstroke_Vol_2_8.png\",\n      \"habilities\": [\n        \"Genius level intellect\",\n        \"Skilled manipulator and deceiver\",\n        \"Increased superhuman\"\n      ],\n      \"publisher\": {\n        \"name\": \"DC Comics\",\n        \"authors\": [\"Marv Wolfman\", \"George Pérez\"]\n      }\n    }\n  \"\"\"\n\n  val invalidJson = \"\"\"\n    {\n      \"name\": \"Deathstroke\",\n      \"alias\": [\"Slade Wilson\",\n      \"active\": true,\n    }\n  \"\"\"",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":4,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"# Parsing JSON\n  \nDéfinition : Transformation d'une STRING en un objet contenant une représentation typée du JSON.\nLe parsing peut échouer si le string ne respecte pas le format JSON, dans ce cas une erreur est levée.\n<br />\n<br />\nLa méthode de parsing de Circe respecte cette définition en retournant un résultat de la forme : \n<br />\n\n```\npackage io.circe.parser\ndef parse(str: String): Xor[ParsingFailure, Json]\n```\n\n<br />\n`Xor` (pour Ou exclusif) est une structure de données fonctionnelle introduite par la librairie cats ([documentation](http://typelevel.org/cats/tut/xor.html)).\n<br />\n\n> Represents a right-biased disjunction that is either an `A` or a `B`.\n<br /><br />\n> An instance of `A [[Xor]] B` is either a `[[Xor.Left Left]][A]` or a `[[Xor.Right Right]][B]`.\n<br /><br />\n> A common use of [[Xor]] is to explicitly represent the possibility of failure in a result as opposed to throwing an exception.  By convention, [[Xor.Left Left]] is used for errors and [[Xor.Right Right]] is reserved for successes.\n<br /><br />\n> For example, a function that attempts to parse an integer from a string may have a return type of`NumberFormatException [[Xor]] Int`. However, since there is no need to actually throw an exception, the type (`A`) chosen for the \"left\" could be any type representing an error and has no need to actually extend `Exception`.\n```"
+    },{
+      "cell_type":"code",
+      "input":"import cats.data.Xor\nimport io.circe.parser._\n  \nval validResult: Xor[ParsingFailure, Json] = io.circe.parser.parse(validJSON)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":6,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"val invalidResult: Xor[ParsingFailure, Json] = io.circe.parser.parse(invalidJson)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":7,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"## Opérations sur un Xor"
+    },{
+      "cell_type":"markdown",
+      "source":"### Pattern Matching\n\nLe type abstrait `Xor` a 2 implémentations, qui correspondent aux 2 états possibles :\n\n```\nobject Xor extends XorInstances with XorFunctions {\n  final case class Left[+A](a: A) extends Xor[A, Nothing]\n  final case class Right[+B](b: B) extends Xor[Nothing, B]\n}\n```\n<br/>\n\nOn peut donc utiliser cette définition pour pattern-matcher en fonction de l'état du Xor"
+    },{
+      "cell_type":"code",
+      "input":"val asString1 =  invalidResult match {\n  case Xor.Left(parsingFailure) => parsingFailure.message // retourne pourquoi le parsing a échoué\n  case Xor.Right(json) => json.spaces2 // Permet de retransformer le Json en String\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":10,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"### Fold\n\nQuasiment équivalent que le pattern match, la méthode `fold` permet de transformer soit le json, soit le parsing failure, vers un type de donné commun.\n\n```\ndef fold[C](fa: A => C, fb: B => C): C\n```"
+    },{
+      "cell_type":"code",
+      "input":"val asString2 = validResult.fold(\n  err => err.message,\n  json => json.spaces2\n)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":11,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"### Map\n  \nOpération principale : permet de transformer le côté `Right` du `Xor` (dans notre cas: le `Json`).\nC'est pour cela qu'on dit que le Xor est \"right biased\" : la valeur de droite est la plus importante.\n\n```\ndef map[D](f: B => D): Xor[A, D]\n```\n  "
+    },{
+      "cell_type":"code",
+      "input":"val resultObj = validResult.map { json =>\n  json.asObject.\n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":12,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"### Transformation vers des types Scala\n  "
+    },{
+      "cell_type":"code",
+      "input":"val option = validResult.toOption\nval either = validResult.toEither",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":14,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

@@ -1,0 +1,72 @@
+{
+  "metadata":{
+    "name":"Circe JSON : 3 - Décodeurs",
+    "user_save_timestamp":"2016-04-17T20:32:46.090Z",
+    "auto_save_timestamp":"2016-04-18T08:44:15.192Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"markdown",
+      "source":"# Décodeur\n  \nLe décodeur permet de transformer un objet `Json` dans une case class.\nComme pour le parsing, l'opération peut échouer si la case class ne correspond pas au JSON.\n<br /><br />\nExemple : \n\n```\n{ \"firstname\": \"Julien\", \"lastname\": \"Lafont\", \"age\": 26} <=> case class(firstname: String, lastname: String, age: 26)\n```\n<br /><br />\nLe décodage se fait avec la méthode suivante :\n\n```\npackage io.circe.parser\ndef decode[A](input: String)(implicit decoder: Decoder[A]): Xor[Error, A]\n```\n\n<br /><br />\nPour pouvoir décoder une case class T, il est nécessaire d'avoir un `Decoder[T]` dans le scope (implicit). <br />\nIl y a 3 manière de générer les décodeurs  : Automatique, semi-automatique, manuel"
+    },{
+      "cell_type":"markdown",
+      "source":"## 100% automatique\n\n**Avantage** : Aucun code à écrire<br />\n**Inconvénient** : Impossible à personnaliser, et le temps de compilation peut exploser"
+    },{
+      "cell_type":"code",
+      "input":"import io.circe._\nimport io.circe.parser._\nimport io.circe.syntax._\nimport cats.data.Xor\n  \n  case class Categorie(name: String, id: Long)\n      \n  case class Stuff(\n    id: Long,\n    name: String,\n    price: BigDecimal,\n    isAvailable: Boolean,\n    categories: Seq[Categorie],\n    custom: Map[String, String]\n  )\n \n val json = \"\"\"\n    {\n      \"id\": 1000,\n      \"name\": \"The Stuff\",\n      \"price\": 143.23,\n      \"isAvailable\": true,\n      \"categories\": [\n      \t{\"name\": \"categorie1\", \"id\": 1},\n        {\"name\": \"categorie2\", \"id\": 2}\n      ],\n      \"custom\": {\n        \"blip\": \"blop\",\n        \"blup\": \"blep\"\n      }\n    }\"\"\"\n      \n      \ndef auto(): Xor[Error, Stuff] = {\n  import io.circe.generic.auto._\n  io.circe.parser.decode[Stuff](json)\n}\n\nauto() // Doesn't work in the notebook.....\n  ",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":72,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"## Semi-auto"
+    },{
+      "cell_type":"code",
+      "input":"import io.circe._\nimport io.circe.parser._\nimport io.circe.syntax._\nimport cats.data.Xor\n        \n  case class Categorie(name: String, id: Long)\n    \n  case class Stuff(\n    id: Long,\n    name: String,\n    price: BigDecimal,\n    isAvailable: Boolean,\n    categories: Seq[Categorie],\n    custom: Map[String, String]\n  )\n    \n   \n val json = \"\"\"\n    {\n      \"id\": 1000,\n      \"name\": \"The Stuff\",\n      \"price\": 143.23,\n      \"isAvailable\": true,\n      \"categories\": [\n      \t{\"name\": \"categorie1\", \"id\": 1},\n        {\"name\": \"categorie2\", \"id\": 2}\n      ],\n      \"custom\": {\n        \"blip\": \"blop\",\n        \"blup\": \"blep\"\n      }\n    }\"\"\"\n      \n      \ndef semiauto(): Xor[Error, Stuff] = {\n  import io.circe.generic.semiauto._\n    \n  implicit val categorieDecoder: Decoder[Categorie] = deriveDecoder[Categorie]\n  implicit val stuffDecoder: Decoder[Stuff] = deriveDecoder[Stuff]\n    \n  io.circe.parser.decode[Stuff](json)\n}\n\nsemiauto() // Doesn't work in notebook too... fuck :D\n  ",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":76,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"## Décodeur custom\n  \nSi le JSON ne correspond pas exactement à la case class dans lequel on veut insérer le contenu, il est possible d'écrire un Décodeur custom."
+    },{
+      "cell_type":"code",
+      "input":"\nimport io.circe._\nimport io.circe.parser._\nimport io.circe.syntax._\nimport cats.data.Xor\n\ncase class Person(firstname: String, age: Int, salary: Option[BigDecimal], serviceName: String)\n\nval json = \"\"\"\n{\n  \"name\": \"Dupont\",\n  \"lastname\": \"Pierre\",\n  \"age\": \"26\",\n  \"salary\": null,\n  \"company\": {\n    \"name\": \"Unicorn corporation\",\n    \"service\": {\n      \"name\": \"Master Unicorn\"\n    }\n  }\n}\"\"\"\n\nimplicit val personDecoder = Decoder.instance[Person] { cursor =>\n  for {\n    firstname <- cursor.get[String](\"name\")\n    age <- cursor.get[String](\"age\").map(_.toInt)\n    salary <- cursor.get[Option[BigDecimal]](\"salary\")\n    serviceName <- cursor\n      \t\t\t\t.downField(\"company\")\n      \t\t\t\t.downField(\"service\")\n      \t\t\t\t.get[String](\"name\")\n  } yield Person(firstname, age, salary, serviceName)\n}\n\nio.circe.parser.decode[Person](json)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":90,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"// And with invalid JSON\n\nval jsonInvalid = \"\"\"\n{\n  \"name\": \"Dupont\",\n  \"lastname\": \"Pierre\",\n  \"age\": \"26\",\n  \"salary\": 12,\n  \"company\": {\n    \"name\": \"Unicorn corporation\"\n  }\n}\"\"\"\n  \nval fail = io.circe.parser.decode[Person](jsonInvalid)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":93,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"## Compatibilité\n\nCirce fournit des décodeurs pour tous les types primitifs de Scala, ce qui permet d'écrire `.get[String]` sans avoir à écrire manuellement un `Decoder[String]`.\n\n\n    val decodeHCursor: Decoder[HCursor]\n    val decodeJson: Decoder[Json]\n    val decodeJsonObject: Decoder[JsonObject]\n    val decodeJsonNumber: Decoder[JsonNumber]\n    \n    val decodeString: Decoder[String]\n    val decodeUnit: Decoder[Unit]\n    val decodeBoolean: Decoder[Boolean]\n    val decodeChar: Decoder[Char]\n    \n    val decodeFloat: Decoder[Float]\n    val decodeDouble: Decoder[Double]\n    val decodeByte: Decoder[Byte]\n    val decodeShort: Decoder[Short] \n    val decodeInt: Decoder[Int]\n    val decodeLong: Decoder[Long]\n    val decodeBigDecimal: Decoder[BigDecimal]\n    \n    val decodeUUID: Decoder[UUID]\n\n    /* Types composés: Seq, List, Map, Either, Xor... */\n    def decodeCanBuildFrom[A, C[_]](implicit d: Decoder[A], cbf: CanBuildFrom[Nothing, A, C[A]]): Decoder[C[A]]\n    def decodeOption[A](implicit d: Decoder[A]): Decoder[Option[A]]\n    def decodeXor[A, B](leftKey: String, rightKey: String)(implicit da: Decoder[A], db: Decoder[B]): Decoder[Xor[A, B]]\n    def decodeEither[A, B](leftKey: String, rightKey: String)(implicit da: Decoder[A], db: Decoder[B]): Decoder[Either[A, B]] \n\n"
+    },{
+      "cell_type":"markdown",
+      "source":"### Et si mon type est manquant ?\n\nPar exemple, il n'y a pas de décoder pour les types `Date`, `DateTime`, `LocalDateTime` (car il n'y a pas de solution universelle pour décoder une date, de nombreux format son possible).\n\nIl suffit de rajouter dans le contexte un décodeur manuel pour ce type de données, par exemple :\n\n      implicit final val decodeDateTime: Decoder[DateTime] = new Decoder[DateTime] {\n        final def apply(c: HCursor): Result[DateTime] = c.focus match {\n          case JString(string) => decodeStringAsDateTime(string)\n          case _ => Xor.left(DecodingFailure(\"DateTime\", c.history))\n        }\n      }\n"
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}

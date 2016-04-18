@@ -1,0 +1,56 @@
+{
+  "metadata":{
+    "name":"Circe JSON : 4 - Curseurs",
+    "user_save_timestamp":"2016-04-18T08:22:23.982Z",
+    "auto_save_timestamp":"2016-04-18T08:54:11.786Z"
+  },
+  "worksheets":[{
+    "cells":[{
+      "cell_type":"markdown",
+      "source":"# Curseurs\n  \n## Kézako ??\n  \nA zipper that represents a position in a JSON document and supports navigation and modification.\n<br /><br />\n\nThe focus represents the current position of the cursor; it may be updated with withFocus or changed using navigation methods like left and right.\n<br /><br />\n\nCirce includes three kinds of cursors. **Cursor** is the simplest: it doesn't keep track of its history. **HCursor** is a cursor that does keep track of its history, but does not represent the possibility that a navigation or modification operation has failed. **ACursor** is the richest cursor, since it both tracks history through an underlying HCursor and can represent failed operations.\n"
+    },{
+      "cell_type":"code",
+      "input":"/*\n * A zipper that represents a position in a JSON value and supports navigation around the JSON\n * value.\n *\n * The `focus` represents the current position of the cursor; it may be updated with `withFocus` or\n * changed using the navigation methods `left`, `right`, etc.\n */\nclass Cursor {\n\n  final def fields : scala.Option[scala.List[scala.Predef.String]] = { /* compiled code */ }\n\n  final def up : io.circe.ACursor = { /* compiled code */ }\n  final def left : io.circe.ACursor = { /* compiled code */ }\n  final def right : io.circe.ACursor = { /* compiled code */ }\n\n  final def first : io.circe.ACursor = { /* compiled code */ }\n  final def last : io.circe.ACursor = { /* compiled code */ }\n\n  final def leftN(n : scala.Int) : io.circe.ACursor = { /* compiled code */ }\n  final def rightN(n : scala.Int) : io.circe.ACursor = { /* compiled code */ }\n  final def leftAt(p : scala.Function1[io.circe.Json, scala.Boolean]) : io.circe.ACursor = { /* compiled code */ }\n  final def rightAt(p : scala.Function1[io.circe.Json, scala.Boolean]) : io.circe.ACursor = { /* compiled code */ }\n\n  final def find(p : scala.Function1[io.circe.Json, scala.Boolean]) : io.circe.ACursor = { /* compiled code */ }\n\n  final def downArray : io.circe.ACursor = { /* compiled code */ }\n  final def downAt(p : scala.Function1[io.circe.Json, scala.Boolean]) : io.circe.ACursor = { /* compiled code */ }\n  final def downN(n : scala.Int) : io.circe.ACursor = { /* compiled code */ }\n  \n  // Read\n  final def as[A](implicit d : io.circe.Decoder[A]) : io.circe.Decoder.Result[A] = { /* compiled code */ }\n  final def get[A](k : scala.Predef.String)(implicit d : io.circe.Decoder[A]) : io.circe.Decoder.Result[A] = { /* compiled code */ }\n}\n\nclass HCursor extends Cursor {\n  \n  // Delete\n  final def delete : io.circe.ACursor = { /* compiled code */ }\n  final def deleteGoLeft : io.circe.ACursor = { /* compiled code */ }\n  final def deleteGoRight : io.circe.ACursor = { /* compiled code */ }\n  final def deleteGoFirst : io.circe.ACursor = { /* compiled code */ }\n  final def deleteGoLast : io.circe.ACursor = { /* compiled code */ }\n  final def deleteLefts : io.circe.ACursor = { /* compiled code */ }\n  final def deleteRights : io.circe.ACursor = { /* compiled code */ }\n\n  // Update\n  final def setLefts(js : scala.List[io.circe.Json]) : io.circe.ACursor = { /* compiled code */ }\n  final def setRights(js : scala.List[io.circe.Json]) : io.circe.ACursor = { /* compiled code */ }\n  final def deleteGoField(k : scala.Predef.String) : io.circe.ACursor = { /* compiled code */ }\n  \n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":88,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "autosaved":[{
+    "cells":[{
+      "cell_type":"markdown",
+      "source":"# Curseurs\n  \n## Kézako ??\n  \nA zipper that represents a position in a JSON document and supports navigation and modification.\n<br /><br />\n\nThe focus represents the current position of the cursor; it may be updated with withFocus or changed using navigation methods like left and right.\n<br /><br />\n\nCirce includes three kinds of cursors. **Cursor** is the simplest: it doesn't keep track of its history. **HCursor** is a cursor that does keep track of its history, but does not represent the possibility that a navigation or modification operation has failed. **ACursor** is the richest cursor, since it both tracks history through an underlying HCursor and can represent failed operations.\n"
+    },{
+      "cell_type":"code",
+      "input":"class Cursor {\n\n  final def fields : Option[List[String]] = { }\n\n  final def up : io.circe.ACursor = { }\n  final def left : io.circe.ACursor = { }\n  final def right : io.circe.ACursor = { }\n\n  final def first : io.circe.ACursor = { }\n  final def last : io.circe.ACursor = { }\n\n  final def leftN(n : Int) : io.circe.ACursor = { }\n  final def rightN(n : Int) : io.circe.ACursor = { }\n  final def leftAt(p : Function1[io.circe.Json, Boolean]) : io.circe.ACursor = { }\n  final def rightAt(p : Function1[io.circe.Json, Boolean]) : io.circe.ACursor = { }\n\n  final def find(p : Function1[io.circe.Json, Boolean]) : io.circe.ACursor = { }\n\n  final def downArray : io.circe.ACursor = { }\n  final def downAt(p : Function1[io.circe.Json, Boolean]) : io.circe.ACursor = { }\n  final def downN(n : Int) : io.circe.ACursor = { }\n  \n  // Read\n  final def as[A](implicit d : io.circe.Decoder[A]) : io.circe.Decoder.Result[A] = { }\n  final def get[A](k : String)(implicit d : io.circe.Decoder[A]) : io.circe.Decoder.Result[A] = { }\n}\n\nclass HCursor extends Cursor {\n  \n  // Delete\n  final def delete : io.circe.ACursor = { }\n  final def deleteGoLeft : io.circe.ACursor = { }\n  final def deleteGoRight : io.circe.ACursor = { }\n  final def deleteGoFirst : io.circe.ACursor = { }\n  final def deleteGoLast : io.circe.ACursor = { }\n  final def deleteLefts : io.circe.ACursor = { }\n  final def deleteRights : io.circe.ACursor = { }\n\n  // Update\n  final def setLefts(js : scala.List[io.circe.Json]) : io.circe.ACursor = { }\n  final def setRights(js : scala.List[io.circe.Json]) : io.circe.ACursor = { }\n  final def deleteGoField(k : scala.Predef.String) : io.circe.ACursor = { }\n  \n}",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":88,
+      "outputs":[]
+    },{
+      "cell_type":"markdown",
+      "source":"## Rapport avec Circe ?\n  \nOn obtient un curseur dans 2 cas principaux :\n\n * Dans la définition manuelle d'un Décodeur : `def instance[A](f: HCursor => Result[A]): Decoder[A]`\n * A partir d'un objet `Json`, pour parcourir/récupérer une données précise "
+    },{
+      "cell_type":"code",
+      "input":"import io.circe._\n\nval json = \"\"\"\n  {\n    \"a\": 1,\n    \"b\": 2,\n    \"c\": {\n      \"ca\": 3,\n      \"cb\": 5,\n      \"cc\": [ 6, 7, 8 ]\n    }\n  }\"\"\"\n\nval cursor = io.circe.parser.parse(json).toOption.get.cursor\n\nval result = for {\n  childC <- cursor.downField(\"c\")\n  childCC <- childC.downField(\"cc\")\n  ccArray <- childCC.downArray\n  first <- ccArray.first.map(_.as[Int])\n  last <- ccArray.last.map(_.as[Int])\n} yield (first, last)",
+      "language":"scala",
+      "collapsed":false,
+      "prompt_number":3,
+      "outputs":[]
+    },{
+      "cell_type":"code",
+      "input":"",
+      "language":"scala",
+      "collapsed":true,
+      "outputs":[]
+    }]
+  }],
+  "nbformat":3
+}
