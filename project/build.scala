@@ -56,7 +56,7 @@ object NotebookBuild extends Build {
         scalaTest,
         commonsIO,
         "org.apache.commons" % "commons-exec" % "1.2"
-      )
+      ) ++ circe
     )
 
   lazy val observable = Project(id = "observable", base = file("observable"))
@@ -74,7 +74,7 @@ object NotebookBuild extends Build {
         unfilteredJson,
         scalaTest,
         "com.netflix.rxjava" % "rxjava-scala" % "0.5.3"
-      )
+      ) ++ circe
     )
 
   lazy val common = Project(id = "common", base = file("common"))
@@ -89,7 +89,7 @@ object NotebookBuild extends Build {
         scalaTest,
         "log4j" % "log4j" % "1.2.17",
         "org.scalaz" %% "scalaz-core" % "7.0.6"
-      )
+      ) ++ circe
     )
 
   lazy val kernel = Project(id = "kernel", base = file("kernel"))
@@ -105,7 +105,7 @@ object NotebookBuild extends Build {
         slf4jLog4j,
         commonsIO,
         scalaTest
-      ),
+      ) ++ circe,
 
       libraryDependencies ++= Seq(
         "org.scala-lang" % "jline" % scalaVersion.value,
@@ -135,7 +135,7 @@ object NotebookBuild extends Build {
         scalaTest,
         scalaMock,
         "org.fusesource.scalate" %% "scalate-core" % "1.6.1"
-      )
+      ) ++ circe
     )
 
   object Dependencies {
@@ -153,6 +153,11 @@ object NotebookBuild extends Build {
     val akkaTestkit          = "com.typesafe.akka"         %%        "akka-testkit"         %    akkaVersion    % "test"
     val scalaTest            = "org.scalatest"             %%          "scalatest"          %      "2.2.0"      % "test"
     val scalaMock            = "org.scalamock"             %% "scalamock-scalatest-support" %     "3.1.RC1"     % "test"
+    val circe = Seq(
+      "io.circe" %% "circe-core" % "0.4.0",
+      "io.circe" %% "circe-generic" % "0.4.0",
+      "io.circe" %% "circe-parser" % "0.4.0"
+    )
   }
 
 
